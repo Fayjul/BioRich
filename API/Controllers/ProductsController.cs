@@ -1,19 +1,35 @@
+using Core.Entities;
+using Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-        [HttpGet]
-        public string GetProducts()
+        private readonly StoreContext _contex;
+        public ProductsController(StoreContext context)
         {
-            return "This is the all products";
+            _contex = context;
+        }
+        [HttpGet]
+        public async Task<ActionResult<List<Product>>> GetProducts()
+        {
+            var products = await _contex.Products.ToListAsync();
+
+            return Ok(products);
         }
         [HttpGet(":id")]
-        public string GetProduct(int id)
+        public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            return $"We are searching product by id = {id}";
+            var product = await _contex.Products.FindAsync(id);
+
+            if (product == null)
+            {
+                return NotFound("Please provide a valid id.");
+            }
+            return Ok(product);
         }
     }
 }
